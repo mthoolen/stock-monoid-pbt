@@ -3,25 +3,24 @@
  */
 package kata.base
 
+import com.pholser.junit.quickcheck.Property
+import com.pholser.junit.quickcheck.runner.JUnitQuickcheck
+import org.junit.runner.RunWith
+import java.math.BigInteger
 import kotlin.math.roundToInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class AppTest {
+@RunWith(JUnitQuickcheck::class)
+class StockTest {
     @Test
     fun stockShouldBeAbleToBeCombined() {
-        val stock20 = Stock(20)
-        val stock30 = Stock(30)
-        assertEquals(Stock(50), stock20.combine(stock30))
+        val stock20 = Stock.of(20)
+        val stock30 = Stock.of(30)
+        assertEquals(Stock.of(50), stock20.combine(stock30))
     }
 
-    @Test
-    fun stockShouldBeAbleToBeCombinedForDifferentValues() {
-        val stock20 = Stock(20)
-        val stock40 = Stock(40)
-        assertEquals(Stock(60), stock20.combine(stock40))
-    }
 
     @Test
     fun closureOfOperation() {
@@ -32,7 +31,7 @@ class AppTest {
 
     @Test
     fun adding0DoesntChanceValue() {
-        val stock0 = Stock(0)
+        val stock0 = Stock.of(0)
         val anyStock = forAnyStock()
         assertEquals(anyStock, anyStock.combine(stock0))
     }
@@ -53,43 +52,38 @@ class AppTest {
     }
 
     @Test
-    fun associativityForMultiplication() {
+    fun shouldBeAbleToTellMinimalStock() {
+        val stock20 = Stock.of(20)
+        val stock40 = Stock.of(40)
+        val combined = stock20.combine(stock40)
+        assertEquals(20, combined.lowestValue)
+    }
+
+    @Test
+    fun shouldBeAbleToTellAverage() {
+        val stock20 = Stock.of(20)
+        val stock40 = Stock.of(40)
+        val combined = stock20.combine(stock40)
+        assertEquals(30, combined.average)
+    }
+
+    @Test
+    fun associativityForAverage() {
         val a = forAnyStock();
         val b = forAnyStock();
         val c = forAnyStock();
-        assertEquals(a.multiply(b).multiply(c), a.multiply(b.multiply(c)));
+        val left = a.combine(b).combine(c)
+        val right = a.combine(b.combine(c))
+        assertEquals(left.average, right.average);
     }
 
     @Test
-    fun neutralElementForMultiplication() {
-        val a = forAnyStock()
-        assertEquals(a, a.multiply(Stock.NEUTRAL_MULTIPLY)) // combine right
-        assertEquals(a, Stock.NEUTRAL_MULTIPLY.multiply(a)) // combine left
+    fun associativityForMinimum() {
+        val a = forAnyStock();
+        val b = forAnyStock();
+        val c = forAnyStock();
+        assertEquals(a.combine(b).combine(c).lowestValue, a.combine(b.combine(c)).lowestValue);
     }
 
-
-    @Test
-    fun closureOfOperationForMultiply() {
-        val a: Stock = forAnyStock()
-        val b: Stock = forAnyStock()
-        assertTrue { a.multiply(b) is Stock }
-    }
-
-    @org.junit.Test
-    fun shouldBeAbleToTellMinimalStock() {
-        val stock20 = Stock(20)
-        val stock40 = Stock(40)
-        val combined = stock20.combine(40)
-        combined.minimalValue
-    }
-
-    private fun forAnyStock(): Stock {
-        return  Stock((Math.random() * 100).roundToInt())
-    }
-
-    //Closure of operations
-    //Neutral element
-    //Associativity
-
-
+    private fun forAnyStock() = Stock.of((Math.random() * 100).roundToInt())
 }
